@@ -9,17 +9,21 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.nio.channels.InterruptedByTimeoutException;
 import java.util.List;
 
 public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
     private LayoutInflater inflater;
     private List<Note> notes;
+    private Context context;
 
     Adapter (Context context, List<Note> notes) {
         this.inflater = LayoutInflater.from(context);
         this.notes = notes;
+        this.context = context;
     }
 
     @NonNull
@@ -35,11 +39,30 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
         String title = notes.get(i).getTitle();
         String date = notes.get(i).getDate();
         String time = notes.get(i).getTime();
-        long id = notes.get(i).getID();
+        long tempID = notes.get(i).getID();
 
         viewHolder.nTitle.setText(title);
         viewHolder.nDate.setText(date);
         viewHolder.nTime.setText(time);
+
+        viewHolder.mainLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent i = new Intent(context, ViewNote.class);
+                i.putExtra("id",String.valueOf(tempID));
+                context.startActivity(i);
+
+            }
+        });
+
+        viewHolder.mainLayout.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                Toast.makeText(context, "long click", Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        });
     }
 
     @Override
@@ -48,21 +71,15 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder{
-        TextView nTitle, nDate, nTime, nID;
+        TextView nTitle, nDate, nTime;
+        ConstraintLayout mainLayout;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             nTitle = itemView.findViewById(R.id.nTitle);
             nDate = itemView.findViewById(R.id.nDate);
             nTime = itemView.findViewById(R.id.nTime);
-
-            itemView.setOnClickListener(new View.OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-                    Toast.makeText(v.getContext(), "Item clicked", Toast.LENGTH_SHORT).show();
-                }
-            });
+            mainLayout = itemView.findViewById(R.id.mainLayout);
         }
     }
 }

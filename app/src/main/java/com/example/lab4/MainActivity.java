@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitleTextColor(getResources().getColor(R.color.white));
         setSupportActionBar(toolbar);
         NoteDatabase db = new NoteDatabase(this);
         notes = db.getNotes();
@@ -47,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         if(item.getItemId() == R.id.add) {
             Intent i = new Intent(this,AddNote.class);
             startActivity(i);
-            Toast.makeText(this, "Add button is clicked", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "Add button is clicked", Toast.LENGTH_SHORT).show();
         }
         return super.onOptionsItemSelected(item);
     }

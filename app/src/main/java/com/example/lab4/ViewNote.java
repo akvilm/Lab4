@@ -5,39 +5,46 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Calendar;
+import java.util.List;
 
-public class AddNote extends AppCompatActivity {
-    Toolbar toolbar;
-    EditText noteTitle, noteDetails;
+public class ViewNote extends AppCompatActivity {
+
+    Toolbar toolbarView;
+    EditText nTitle, nDetails;
     Calendar c;
     String todaysDate;
     String currentTime;
+    String noteId;
+    NoteDatabase db = new NoteDatabase(this);
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Note note;
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_note);
-        toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitleTextColor(getResources().getColor(R.color.white));
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("New Note");
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        setContentView(R.layout.activity_view_note);
+        toolbarView = findViewById(R.id.toolbarView);
+        toolbarView.setTitleTextColor(getResources().getColor(R.color.white));
+        setSupportActionBar(toolbarView);
 
-        noteTitle = findViewById(R.id.noteTitle);
-        noteDetails = findViewById(R.id.noteDetails);
+        nTitle = findViewById(R.id.viewTitle);
+        nDetails = findViewById(R.id.viewDetails);
+        noteId = getIntent().getStringExtra("id");
+        note = db.getNote(Long.valueOf(noteId));
 
-        noteTitle.addTextChangedListener(new TextWatcher() {
+        nTitle.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -45,9 +52,9 @@ public class AddNote extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    if(s.length() != 0) {
-                        getSupportActionBar().setTitle(s);
-                    }
+                if(s.length() != 0) {
+                    getSupportActionBar().setTitle(s);
+                }
             }
 
             @Override
@@ -56,12 +63,15 @@ public class AddNote extends AppCompatActivity {
             }
         });
 
-        // get current date and time
+        nTitle.setText(note.getTitle());
+        nDetails.setText(note.getContent());
+
+        getSupportActionBar().setTitle(note.getTitle());
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         c = Calendar.getInstance();
         todaysDate = c.get(Calendar.YEAR)+"/"+(c.get(Calendar.MONTH)+1)+"/"+c.get(Calendar.DAY_OF_MONTH);
         currentTime = pad(c.get(Calendar.HOUR))+":"+pad(c.get(Calendar.MINUTE));
-
-        Log.d("calendar","Date and Time: " + todaysDate + " and" + currentTime);
     }
 
     private String pad(int i) {
@@ -80,15 +90,15 @@ public class AddNote extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if(item.getItemId() == R.id.delete) {
-            Toast.makeText(this, "Note Not Saved", Toast.LENGTH_SHORT).show();
-            onBackPressed();
+            db.deleteNote(Long.valueOf(noteId));
+            gotToMain();
         }
         if(item.getItemId() == R.id.save) {
-            Note note = new Note(noteTitle.getText().toString(),noteDetails.getText().toString(),todaysDate,currentTime);
-            NoteDatabase db = new NoteDatabase(this);
-            long id = db.addNote(note);
-            if (id != -1) {
-                Toast.makeText(this, "Note Saved", Toast.LENGTH_SHORT).show();
+            String title, details;
+            title = nTitle.getText().toString();
+            details = nDetails.getText().toString();
+
+            if (db.updateNote(Long.valueOf(noteId), title, details, todaysDate, currentTime) != -1){
                 gotToMain();
             }
         }
